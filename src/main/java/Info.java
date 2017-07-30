@@ -20,6 +20,23 @@ public abstract class Info implements Serializable{
         this.name = name;
     }
 
+    public void mergeInfo(Info info)
+    {
+        this.commitCommentNum += info.getCommitCommentNum();
+        this.creationNum += info.getCreationNum();
+        this.commitNum += info.getCommitNum();
+        this.forkNum += info.getForkNum();
+        this.gollumNum += info.getGollumNum();
+        this.issueCommentNum += info.getIssueCommentNum();
+        this.issueNum += info.getIssueNum();
+        this.labelNum += info.getLabelNum();
+        this.milestoneNum += info.getMilestoneNum();
+        this.pageBuildNum += info.getPageBuildNum();
+        this.pullRequestNum += info.getPullRequestNum();
+        this.releaseNum += info.getReleaseNum();
+        this.watchNum += info.getWatchNum();
+    }
+
     public abstract void computeValue();
 
     public String getName() {

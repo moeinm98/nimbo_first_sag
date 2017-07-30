@@ -3,12 +3,12 @@ import org.json.JSONObject;
 import java.io.Serializable;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class JsonMaker implements Serializable{
+public class DataParser implements Serializable{
     private ConcurrentHashMap<String, Info> userInfoMap = new ConcurrentHashMap<>();
     private ConcurrentHashMap<String, Info> repoInfoMap = new ConcurrentHashMap<>();
     private ConcurrentHashMap<String, Integer> languageMap = new ConcurrentHashMap<>();
 
-    public void parseJson(String jsonString){
+    public void parseData(String jsonString){
         JSONObject jsonObject = new JSONObject(jsonString);
 
         updateUserInfo(jsonObject);
@@ -102,6 +102,54 @@ public class JsonMaker implements Serializable{
         }
     }
 
+    public void mergeData(DataParser tenMinDataParser)
+    {
+        ConcurrentHashMap<String, Info> tenMinUserInfoMap = tenMinDataParser.getUserInfoMap();
+        ConcurrentHashMap<String, Info> tenMinRepoInfoMap = tenMinDataParser.getRepoInfoMap();
+        ConcurrentHashMap<String, Integer> tenMinLanguageMap = tenMinDataParser.getLanguageMap();
+
+        mergeInfoMap(tenMinUserInfoMap, userInfoMap);
+        mergeInfoMap(tenMinRepoInfoMap, repoInfoMap);
+        mergeLanguageMap(tenMinLanguageMap);
+    }
+
+    private void mergeLanguageMap(ConcurrentHashMap<String, Integer> tenMinLanguageMap)
+    {
+        for (String languageName : tenMinLanguageMap.keySet())
+        {
+            if (languageMap.containsKey(languageName))
+            {
+                int languageRepeatedInThisHour = languageMap.get(languageName);
+                int languageRepeatedInTenMins = tenMinLanguageMap.get(languageName);
+
+                languageMap.put(languageName, languageRepeatedInTenMins + languageRepeatedInThisHour);
+            }
+        }
+    }
+
+    private void mergeInfoMap(ConcurrentHashMap<String, Info> receivedMap, ConcurrentHashMap<String, Info> mainMap)
+    {
+        for (String infoName : receivedMap.keySet())
+        {
+            Info info = receivedMap.get(infoName);
+
+            if (mainMap.containsKey(infoName))
+            {
+                info.mergeInfo(mainMap.get(infoName));
+            } else
+            {
+                mainMap.put(infoName, info);
+            }
+        }
+    }
+
+    public void clearData()
+    {
+        userInfoMap.clear();
+        repoInfoMap.clear();
+        languageMap.clear();
+    }
+
     public ConcurrentHashMap<String, Info> getUserInfoMap() {
         return userInfoMap;
     }
@@ -116,5 +164,15 @@ public class JsonMaker implements Serializable{
 
     public void setRepoInfoMap(ConcurrentHashMap<String, Info> repoInfoMap) {
         this.repoInfoMap = repoInfoMap;
+    }
+
+    public ConcurrentHashMap<String, Integer> getLanguageMap()
+    {
+        return languageMap;
+    }
+
+    public void setLanguageMap(ConcurrentHashMap<String, Integer> languageMap)
+    {
+        this.languageMap = languageMap;
     }
 }

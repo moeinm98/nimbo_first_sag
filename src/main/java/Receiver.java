@@ -6,10 +6,10 @@ public class Receiver {
     final private String endpoint = "wss://open-data.api.satori.com";
     final private String appkey = "86Cac8DF15eCaEF2B3A3846de9D5FF07";
     final private String channel = "github-events";
-    private JsonMaker jsonMaker;
+    private DataParser dataParser;
 
-    public Receiver(JsonMaker jsonMaker) {
-        this.jsonMaker = jsonMaker;
+    public Receiver(DataParser dataParser) {
+        this.dataParser = dataParser;
     }
 
     public void start() {
@@ -27,7 +27,7 @@ public class Receiver {
                     @Override
                     public void onSubscriptionData(SubscriptionData data) {
                         for (AnyJson json : data.getMessages()) {
-                            jsonMaker.parseJson(json.toString());
+                            dataParser.parseData(json.toString());
                         }
                     }
                 });
