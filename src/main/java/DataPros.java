@@ -4,11 +4,11 @@ import java.util.concurrent.ArrayBlockingQueue;
 
 public class DataPros extends Thread{
 
-    private ArrayBlockingQueue<Events> classes;
+    private ArrayBlockingQueue<Events> events;
 
 
-    public DataPros(DataMaker dataMaker){
-        classes=dataMaker.getClasses();
+    public DataPros(Receiver receiver){
+        events =receiver.getEvnets();
     }
     @Override
     public void run() {

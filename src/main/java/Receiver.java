@@ -1,3 +1,4 @@
+import classes.Events;
 import com.satori.rtm.*;
 import com.satori.rtm.model.AnyJson;
 import com.satori.rtm.model.SubscriptionData;
@@ -8,7 +9,7 @@ public class Receiver {
     final private String endpoint = "wss://open-data.api.satori.com";
     final private String appkey = "86Cac8DF15eCaEF2B3A3846de9D5FF07";
     final private String channel = "github-events";
-    private ArrayBlockingQueue<String> receivedData = new ArrayBlockingQueue<>(1000);
+    private ArrayBlockingQueue<Events> evnets = new ArrayBlockingQueue<>(1000);
 
     public void start() {
         final RtmClient client = new RtmClientBuilder(endpoint, appkey)
@@ -26,7 +27,7 @@ public class Receiver {
                     public void onSubscriptionData(SubscriptionData data) {
                         for (AnyJson json : data.getMessages()) {
                             try {
-                                receivedData.put(json.toString());
+                                evnets.put();   //todo
                             } catch (InterruptedException e) {
                                 e.printStackTrace();
                             }
@@ -36,7 +37,7 @@ public class Receiver {
         client.start();
     }
 
-    public ArrayBlockingQueue<String> getReceivedData() {
-        return receivedData;
+    public ArrayBlockingQueue<Events> getEvnets() {
+        return evnets;
     }
 }
