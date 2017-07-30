@@ -1,17 +1,49 @@
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.Semaphore;
 
-public class Engine {
-
+public class Engine
+{
     private DataParser tenMinDataParser = new DataParser();
     private DataParser oneHourDataParser = new DataParser();
     private DataParser oneDayDataParser = new DataParser();
     private Semaphore oneHourTimerSemaphore = new Semaphore(0);
     private Semaphore oneDayTimerSemaphore = new Semaphore(0);
+    private File file;
 
-    public void start(){
-        Receiver receiver = new Receiver(tenMinDataParser);
+    public void start()
+    {
+        // todo: analyze the backup file first, remember to add date to backup file
+
+        file = new File("backup.txt");
+        FileWriter fileWriter = null;
+        BufferedWriter bufferedWriter = null;
+
+        if (!file.exists())
+        {
+            try
+            {
+                file.createNewFile();
+            } catch (IOException e)
+            {
+                e.printStackTrace();
+            }
+        }
+
+        try
+        {
+            fileWriter = new FileWriter(file, true);
+            bufferedWriter = new BufferedWriter(fileWriter);
+        } catch (IOException e)
+        {
+            e.printStackTrace();
+        }
+
+        Receiver receiver = new Receiver(tenMinDataParser, bufferedWriter);
         receiver.start();
         startTimers();
     }
@@ -30,7 +62,21 @@ public class Engine {
                 //todo update data
                 oneHourDataParser.mergeData(tenMinDataParser);
                 tenMinDataParser.clearData();
+
                 oneHourTimerSemaphore.release();
+
+                FileWriter fileWriter;
+
+                try
+                {
+                    fileWriter = new FileWriter(file);
+                    fileWriter.write("");
+                    fileWriter.close();
+                } catch (IOException e)
+                {
+                    e.printStackTrace();
+                }
+
             }
         }, 1000 * 60 * 10, 1000 * 60 * 10);
 
