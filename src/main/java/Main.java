@@ -1,7 +1,8 @@
 public class Main {
 
     public static void main(String[] args) {
-        Receiver receiver = new Receiver();
+        JsonMaker jsonMaker = new JsonMaker();
+        Receiver receiver = new Receiver(jsonMaker);
         receiver.start();
         DataPros dataPros=new DataPros(receiver);
         dataPros.start();

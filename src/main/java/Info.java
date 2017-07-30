@@ -1,6 +1,7 @@
 public abstract class Info {
     private String name;
     private int commitCommentNum;
+    private int creationNum;
     private int forkNum;
     private int issueCommentNum;
     private int issueNum;
@@ -12,6 +13,10 @@ public abstract class Info {
     private int releaseNum;
     private int gollumNum;
     private int watchNum;
+
+    public Info(String name) {
+        this.name = name;
+    }
 
     public abstract void computeValue();
 
@@ -117,5 +122,13 @@ public abstract class Info {
 
     public void setWatchNum(int watchNum) {
         this.watchNum = watchNum;
+    }
+
+    public int getCreationNum() {
+        return creationNum;
+    }
+
+    public void setCreationNum(int creationNum) {
+        this.creationNum = creationNum;
     }
 }
