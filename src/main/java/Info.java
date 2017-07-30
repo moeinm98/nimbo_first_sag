@@ -1,4 +1,6 @@
-public abstract class Info {
+import java.io.Serializable;
+
+public abstract class Info implements Serializable{
     private String name;
     private int commitCommentNum;
     private int creationNum;

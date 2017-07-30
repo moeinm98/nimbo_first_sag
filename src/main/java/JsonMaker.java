@@ -1,8 +1,9 @@
 import org.json.JSONObject;
 
+import java.io.Serializable;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class JsonMaker {
+public class JsonMaker implements Serializable{
     private ConcurrentHashMap<String, Info> userInfoMap = new ConcurrentHashMap<>();
     private ConcurrentHashMap<String, Info> repoInfoMap = new ConcurrentHashMap<>();
     private ConcurrentHashMap<String, Integer> languageMap = new ConcurrentHashMap<>();
