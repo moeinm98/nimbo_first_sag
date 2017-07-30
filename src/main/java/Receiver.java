@@ -9,7 +9,6 @@ public class Receiver {
     final private String endpoint = "wss://open-data.api.satori.com";
     final private String appkey = "86Cac8DF15eCaEF2B3A3846de9D5FF07";
     final private String channel = "github-events";
-    private ArrayBlockingQueue<Events> evnets = new ArrayBlockingQueue<>(1000);
 
     public void start() {
         final RtmClient client = new RtmClientBuilder(endpoint, appkey)
@@ -26,18 +25,10 @@ public class Receiver {
                     @Override
                     public void onSubscriptionData(SubscriptionData data) {
                         for (AnyJson json : data.getMessages()) {
-                            try {
-                                evnets.put();   //todo
-                            } catch (InterruptedException e) {
-                                e.printStackTrace();
-                            }
+
                         }
                     }
                 });
         client.start();
-    }
-
-    public ArrayBlockingQueue<Events> getEvnets() {
-        return evnets;
     }
 }
