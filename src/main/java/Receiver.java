@@ -3,7 +3,6 @@ import com.satori.rtm.model.AnyJson;
 import com.satori.rtm.model.SubscriptionData;
 
 import java.io.BufferedWriter;
-import java.io.FileWriter;
 import java.io.IOException;
 
 public class Receiver {

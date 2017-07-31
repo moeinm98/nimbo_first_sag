@@ -37,7 +37,7 @@ public abstract class Info implements Serializable{
         this.watchNum += info.getWatchNum();
     }
 
-    public abstract void computeValue();
+    public abstract int computeValue();
 
     public String getName() {
         return name;

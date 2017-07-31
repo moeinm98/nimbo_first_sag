@@ -3,7 +3,7 @@ import org.json.JSONObject;
 import java.io.Serializable;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class DataParser implements Serializable{
+public class DataParser implements Serializable{//todo statistics
     private ConcurrentHashMap<String, Info> userInfoMap = new ConcurrentHashMap<>();
     private ConcurrentHashMap<String, Info> repoInfoMap = new ConcurrentHashMap<>();
     private ConcurrentHashMap<String, Integer> languageMap = new ConcurrentHashMap<>();
@@ -88,7 +88,7 @@ public class DataParser implements Serializable{
         }
     }
 
-    private void extractLanguage(JSONObject jsonObject) {
+    private void extractLanguage(JSONObject jsonObject) {//todo
         JSONObject pullReqJson = jsonObject.getJSONObject("payload").getJSONObject("pull_request");
         JSONObject repoJson = pullReqJson.getJSONObject("head").getJSONObject("repo");
         String language = repoJson.getString("language");
