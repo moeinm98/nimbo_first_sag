@@ -10,22 +10,21 @@ public class Engine {
     private Statistics tenMinStatistics = new Statistics();
     private Statistics oneHourStatistics = new Statistics();
     private Statistics oneDayStatistics = new Statistics();
+    private int time; //number of 10 mins passed
     private int tenMinTimerDelay;
     private int oneHourTimerDelay;
     private int oneDayTimerDelay;
-    private CountDownLatch oneHourTimerLatch = new CountDownLatch(6);
-    private CountDownLatch oneDayTimerLatch = new CountDownLatch(24);
+    private CountDownLatch oneHourTimerLatch = new CountDownLatch(5);
+    private CountDownLatch oneDayTimerLatch = new CountDownLatch(2);
     private File tenMinResults = new File("tenMinTrends.txt");
     private File oneHourResults = new File("oneHourTrends.txt");
     private File oneDayResults = new File("oneDayTrends.txt");
-
-
-    private int time; //number of 10 mins passed
 
     public void start() {
         // todo: analyze the backup tenMinBackupFile first, remember to add date to tenMinBackupFile
         findBackupFiles();
         findTimerDelays();
+
 
         try {
             tenMinResults.createNewFile();
@@ -116,7 +115,7 @@ public class Engine {
             public void run() {
                 time++;
 
-                String[] trends = tenMinStatistics.findAndGetTrends();
+                Object[] trends = tenMinStatistics.findAndGetTrends();
 
                 oneHourStatistics.mergeStatistics(tenMinStatistics);
                 updateBackupFile("oneHourBackupFile.data", oneHourStatistics);
@@ -125,7 +124,7 @@ public class Engine {
 
                 oneHourTimerLatch.countDown();
             }
-        }, tenMinTimerDelay, 1000 * 60 * 10);
+        }, 1000 * 60, 1000 * 60);
 
         oneHourTimer.scheduleAtFixedRate(new TimerTask() {
             @Override
@@ -136,16 +135,16 @@ public class Engine {
                     e.printStackTrace();
                 }
 
-                String[] trends = oneHourStatistics.findAndGetTrends();
+                Object[] trends = oneHourStatistics.findAndGetTrends();
 
                 oneDayStatistics.mergeStatistics(oneHourStatistics);
                 oneHourStatistics.clearStatistics();
                 updateOutputFile(oneHourResults, trends, time / 6, "Hour");
 
                 oneDayTimerLatch.countDown();
-                oneHourTimerLatch = new CountDownLatch(6);
+                oneHourTimerLatch = new CountDownLatch(5);
             }
-        }, oneHourTimerDelay, 1000 * 60 * 60);
+        }, 1000 * 60 * 5, 1000 * 60 * 5);
 
         oneDayTimer.scheduleAtFixedRate(new TimerTask() {
             @Override
@@ -156,21 +155,21 @@ public class Engine {
                     e.printStackTrace();
                 }
 
-                String[] trends = oneDayStatistics.findAndGetTrends();
+                Object[] trends = oneDayStatistics.findAndGetTrends();
 
                 oneDayStatistics.clearStatistics();
                 updateOutputFile(oneDayResults, trends, time / (6 * 24), "Day");
 
-                oneHourTimerLatch = new CountDownLatch(24);
+                oneHourTimerLatch = new CountDownLatch(2);
             }
-        }, oneDayTimerDelay, 1000 * 60 * 60 * 24);
+        }, 1000 * 60 * 10, 1000 * 60 * 10);
     }
 
-    private void updateOutputFile(File file, String[] trends, int time, String timeUnit) {
+    private void updateOutputFile(File file, Object[] trends, int time, String timeUnit) {
         try {
-            FileWriter fileWriter = new FileWriter(oneDayResults, true);
+            FileWriter fileWriter = new FileWriter(file, true);
             BufferedWriter bufferedWriter = new BufferedWriter(fileWriter);
-            bufferedWriter.write("\n\n" + time + " " + timeUnit + "\nuserName : " + trends[0] + "\nrepoName : " + trends[1] + "\nlanguage : " + trends[2]);
+            bufferedWriter.write("\n\n" + time + " " + timeUnit + "\nuserName : " + trends[0].toString() + "\nrepoName : " + trends[1].toString() + "\nlanguage : " + trends[2].toString());
             bufferedWriter.close();
             System.out.println(file.getName() + " UPDATED!");
         } catch (IOException e) {

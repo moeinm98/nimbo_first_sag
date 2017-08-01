@@ -1,8 +1,8 @@
 .idea/
 nimbo_first_sag.iml
 githubTrends.iml
-targets/
-backup.txt
+target/
 tenMinTrends.txt
 oneHourTrends.txt
 oneDayTrends.txt
+oneHourBackupFile.data

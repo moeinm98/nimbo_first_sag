@@ -79,6 +79,7 @@ public class Statistics implements Serializable {//todo statistics
             case "PushEvent":
                 int commitNum = jsonObject.getJSONObject("payload").getJSONArray("commits").length();
                 info.setCommitNum(commitNum + info.getCommitNum());
+//                System.out.println(jsonObject.getJSONObject("payload").getJSONArray("commits"));
                 break;
             case "ReleaseEvent":
                 info.setReleaseNum(info.getReleaseNum() + 1);
@@ -168,8 +169,8 @@ public class Statistics implements Serializable {//todo statistics
         this.languageMap = languageMap;
     }
 
-    public String[] findAndGetTrends() {
-        String[] trends = new String[3]; //trends[0]:username //trends[1]:repoName //trends[2]:language
+    public Object[] findAndGetTrends() { //todo
+        Object[] trends = new Object[3]; //trends[0]:username //trends[1]:repoName //trends[2]:language
         trends[0] = findInfoTrend(userInfoMap);
         trends[1] = findInfoTrend(repoInfoMap);
         trends[2] = findLanguageTrend(languageMap);
@@ -180,8 +181,8 @@ public class Statistics implements Serializable {//todo statistics
         return languageMap.entrySet().stream().parallel().max(Comparator.comparing(Map.Entry::getValue)).get().getKey();
     }
 
-    private String findInfoTrend(ConcurrentHashMap<String, Info> infoMap) {
-        return infoMap.entrySet().stream().parallel().max(Comparator.comparing(Map.Entry::getValue)).get().getKey();
+    private Info findInfoTrend(ConcurrentHashMap<String, Info> infoMap) {
+        return ((Map.Entry<String,Info>)infoMap.entrySet().stream().parallel().max(Comparator.comparing(Map.Entry::getValue)).get()).getValue();
     }
 
     public String getFinalUpdateTime()

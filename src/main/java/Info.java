@@ -151,6 +151,26 @@ public abstract class Info implements Serializable, Comparable {
     }
 
     @Override
+    public String toString()
+    {
+        return name/*+" " +
+                "commitComment:"+ commitCommentNum+" " +
+                "creation:"+creationNum+" " +
+                "fork:"+forkNum+" " +
+                "issueComment:"+issueCommentNum+" " +
+                "issue:"+issueNum+" " +
+                "label:"+labelNum+" " +
+                "milestone:"+milestoneNum+" " +
+                "pageBuild:"+pageBuildNum+" " +
+                "watch:"+ this.watchNum + " " +
+                "release:" + this.releaseNum + " " +
+                "pullRequest:" + this.pullRequestNum + " " +
+                "gollum:" + this.gollumNum + " " +
+                "commit:" + this.commitNum + " " +
+                "finalScore:" + this.computeValue()*/;
+    }
+
+    @Override
     public int compareTo(Object o) {
         if (o instanceof Info)
             return this.computeValue() > ((Info) o).computeValue() ? 1 : -1;
