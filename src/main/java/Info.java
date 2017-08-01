@@ -1,6 +1,6 @@
 import java.io.Serializable;
 
-public abstract class Info implements Serializable{
+public abstract class Info implements Serializable, Comparable {
     private String name;
     private int commitCommentNum;
     private int creationNum;
@@ -20,8 +20,7 @@ public abstract class Info implements Serializable{
         this.name = name;
     }
 
-    public void mergeInfo(Info info)
-    {
+    public void mergeInfo(Info info) {
         this.commitCommentNum += info.getCommitCommentNum();
         this.creationNum += info.getCreationNum();
         this.commitNum += info.getCommitNum();
@@ -149,5 +148,12 @@ public abstract class Info implements Serializable{
 
     public void setCreationNum(int creationNum) {
         this.creationNum = creationNum;
+    }
+
+    @Override
+    public int compareTo(Object o) {
+        if (o instanceof Info)
+            return this.computeValue() > ((Info) o).computeValue() ? 1 : -1;
+        return 0;
     }
 }
