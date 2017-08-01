@@ -1,6 +1,8 @@
 import org.json.JSONObject;
 
 import java.io.Serializable;
+import java.util.Comparator;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class DataParser implements Serializable{//todo statistics
@@ -174,5 +176,21 @@ public class DataParser implements Serializable{//todo statistics
     public void setLanguageMap(ConcurrentHashMap<String, Integer> languageMap)
     {
         this.languageMap = languageMap;
+    }
+
+    public String[] findAndGetTrends(){
+        String[] trends=new String[3]; //trends[0]:username //trends[1]:repoName //trends[2]:language
+        trends[0]=findInfoTrend(userInfoMap);
+        trends[1]=findInfoTrend(repoInfoMap);
+        trends[2]=findLanguageTrend(languageMap);
+        return trends;
+    }
+
+    private String findLanguageTrend(ConcurrentHashMap<String, Integer> languageMap) {
+        return languageMap.entrySet().stream().parallel().max(Comparator.comparing(Map.Entry::getValue)).get().getKey();
+    }
+
+    private String findInfoTrend(ConcurrentHashMap<String,Info> infoMap){
+        return ((Map.Entry<String,Info>)infoMap.entrySet().stream().parallel().max(Comparator.comparing(Map.Entry::getValue)).get()).getKey();
     }
 }
