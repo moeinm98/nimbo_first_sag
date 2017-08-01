@@ -151,9 +151,8 @@ public abstract class Info implements Serializable, Comparable {
     }
 
     @Override
-    public String toString()
-    {
-        return name/*+" " +
+    public String toString() {
+        return name+" " +
                 "commitComment:"+ commitCommentNum+" " +
                 "creation:"+creationNum+" " +
                 "fork:"+forkNum+" " +
@@ -167,7 +166,7 @@ public abstract class Info implements Serializable, Comparable {
                 "pullRequest:" + this.pullRequestNum + " " +
                 "gollum:" + this.gollumNum + " " +
                 "commit:" + this.commitNum + " " +
-                "finalScore:" + this.computeValue()*/;
+                "finalScore:" + this.computeValue();
     }
 
     @Override
