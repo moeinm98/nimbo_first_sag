@@ -5,7 +5,7 @@ import java.util.Comparator;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class Statistics implements Serializable {//todo statistics
+public class Statistics implements Serializable {
     private ConcurrentHashMap<String, Info> userInfoMap = new ConcurrentHashMap<>();
     private ConcurrentHashMap<String, Info> repoInfoMap = new ConcurrentHashMap<>();
     private ConcurrentHashMap<String, Integer> languageMap = new ConcurrentHashMap<>();
@@ -93,7 +93,7 @@ public class Statistics implements Serializable {//todo statistics
         }
     }
 
-    private void extractLanguage(JSONObject jsonObject) {//todo
+    private void extractLanguage(JSONObject jsonObject) {
         JSONObject pullReqJson = jsonObject.getJSONObject("payload").getJSONObject("pull_request");
         JSONObject repoJson = pullReqJson.getJSONObject("head").getJSONObject("repo");
         String language = repoJson.getString("language");
@@ -169,7 +169,7 @@ public class Statistics implements Serializable {//todo statistics
         this.languageMap = languageMap;
     }
 
-    public Object[] findAndGetTrends() { //todo
+    public Object[] findAndGetTrends() {
         Object[] trends = new Object[3]; //trends[0]:username //trends[1]:repoName //trends[2]:language
         trends[0] = findInfoTrend(userInfoMap);
         trends[1] = findInfoTrend(repoInfoMap);

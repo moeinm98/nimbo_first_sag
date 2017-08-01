@@ -25,7 +25,6 @@ public class Engine {
         findBackupFiles();
         findTimerDelays();
 
-
         try {
             tenMinResults.createNewFile();
             oneHourResults.createNewFile();
@@ -76,7 +75,7 @@ public class Engine {
     private void findBackupFiles()
     {
         File oneHourBackupFile = new File("oneHourBackup.data");
-        File oneDayBackupFile = new File("oneDatBackup.data");
+        File oneDayBackupFile = new File("oneDateBackup.data");
 
         if (oneHourBackupFile.exists())
         {
@@ -118,9 +117,9 @@ public class Engine {
                 Object[] trends = tenMinStatistics.findAndGetTrends();
 
                 oneHourStatistics.mergeStatistics(tenMinStatistics);
-                updateBackupFile("oneHourBackupFile.data", oneHourStatistics);
                 tenMinStatistics.clearStatistics();
                 updateOutputFile(tenMinResults, trends, time * 10, "Minutes");
+                updateBackupFile("oneHourBackup.data", oneHourStatistics);
 
                 oneHourTimerLatch.countDown();
             }
@@ -140,6 +139,7 @@ public class Engine {
                 oneDayStatistics.mergeStatistics(oneHourStatistics);
                 oneHourStatistics.clearStatistics();
                 updateOutputFile(oneHourResults, trends, time / 6, "Hour");
+                updateBackupFile("oneDateBackup.data", oneDayStatistics);
 
                 oneDayTimerLatch.countDown();
                 oneHourTimerLatch = new CountDownLatch(5);
