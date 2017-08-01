@@ -9,11 +9,11 @@ public class Receiver {
     final private String endpoint = "wss://open-data.api.satori.com";
     final private String appkey = "86Cac8DF15eCaEF2B3A3846de9D5FF07";
     final private String channel = "github-events";
-    private DataParser dataParser;
+    private Statistics statistics;
     private BufferedWriter bufferedWriter;
 
-    public Receiver(DataParser dataParser, BufferedWriter bufferedWriter) {
-        this.dataParser = dataParser;
+    public Receiver(Statistics statistics, BufferedWriter bufferedWriter) {
+        this.statistics = statistics;
         this.bufferedWriter = bufferedWriter;
     }
 
@@ -22,7 +22,7 @@ public class Receiver {
                 .setListener(new RtmClientAdapter() {
                     @Override
                     public void onEnterConnected(RtmClient client) {
-                        System.out.println("Connected to Satori RTM!");
+                        System.out.println("Connected!");
                     }
                 })
                 .build();
@@ -42,7 +42,7 @@ public class Receiver {
                             {
                                 e.printStackTrace();
                             }
-                            dataParser.parseData(message);
+                            statistics.updateStatistics(message);
                         }
                     }
                 });
