@@ -5,12 +5,12 @@ import java.util.Comparator;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class DataParser implements Serializable{//todo statistics
+public class DataParser implements Serializable {//todo statistics
     private ConcurrentHashMap<String, Info> userInfoMap = new ConcurrentHashMap<>();
     private ConcurrentHashMap<String, Info> repoInfoMap = new ConcurrentHashMap<>();
     private ConcurrentHashMap<String, Integer> languageMap = new ConcurrentHashMap<>();
 
-    public void parseData(String jsonString){
+    public void parseData(String jsonString) {
         JSONObject jsonObject = new JSONObject(jsonString);
 
         updateUserInfo(jsonObject);
@@ -22,8 +22,7 @@ public class DataParser implements Serializable{//todo statistics
         String repoName = jsonObject.getJSONObject("repo").getString("name");
 
         Info repoInfo = repoInfoMap.get(repoName);
-        if (repoInfo == null)
-        {
+        if (repoInfo == null) {
             repoInfo = new RepoInfo(repoName);
             repoInfoMap.put(repoName, repoInfo);
         }
@@ -35,7 +34,7 @@ public class DataParser implements Serializable{//todo statistics
         String username = jsonObject.getJSONObject("actor").getString("login");
 
         Info userInfo = userInfoMap.get(username);
-        if (userInfo == null){
+        if (userInfo == null) {
             userInfo = new UserInfo(username);
             userInfoMap.put(username, userInfo);
         }
@@ -45,7 +44,7 @@ public class DataParser implements Serializable{//todo statistics
 
     private void updateInfoFields(Info info, JSONObject jsonObject) {
         String type = jsonObject.getString("type");
-        switch (type){
+        switch (type) {
             case "CommitCommentEvent":
                 info.setCommitCommentNum(info.getCommitCommentNum() + 1);
                 break;
@@ -95,17 +94,14 @@ public class DataParser implements Serializable{//todo statistics
         JSONObject repoJson = pullReqJson.getJSONObject("head").getJSONObject("repo");
         String language = repoJson.getString("language");
 
-        if (!languageMap.containsKey(language))
-        {
+        if (!languageMap.containsKey(language)) {
             languageMap.put(language, 1);
-        } else
-        {
+        } else {
             languageMap.put(language, languageMap.get(language) + 1);
         }
     }
 
-    public void mergeData(DataParser tenMinDataParser)
-    {
+    public void mergeData(DataParser tenMinDataParser) {
         ConcurrentHashMap<String, Info> tenMinUserInfoMap = tenMinDataParser.getUserInfoMap();
         ConcurrentHashMap<String, Info> tenMinRepoInfoMap = tenMinDataParser.getRepoInfoMap();
         ConcurrentHashMap<String, Integer> tenMinLanguageMap = tenMinDataParser.getLanguageMap();
@@ -115,38 +111,31 @@ public class DataParser implements Serializable{//todo statistics
         mergeLanguageMap(tenMinLanguageMap);
     }
 
-    private void mergeLanguageMap(ConcurrentHashMap<String, Integer> tenMinLanguageMap)
-    {
-        for (String languageName : tenMinLanguageMap.keySet())
-        {
-            if (languageMap.containsKey(languageName))
-            {
-                int languageRepeatedInThisHour = languageMap.get(languageName);
-                int languageRepeatedInTenMins = tenMinLanguageMap.get(languageName);
-
-                languageMap.put(languageName, languageRepeatedInTenMins + languageRepeatedInThisHour);
+    private void mergeLanguageMap(ConcurrentHashMap<String, Integer> tenMinLanguageMap) {
+        for (String languageName : tenMinLanguageMap.keySet()) {
+            int languageRepeatedInThisHour = 0;
+            int languageRepeatedInTenMins;
+            if (languageMap.containsKey(languageName)) {
+                languageRepeatedInThisHour = languageMap.get(languageName);
             }
+            languageRepeatedInTenMins = tenMinLanguageMap.get(languageName);
+            languageMap.put(languageName, languageRepeatedInTenMins + languageRepeatedInThisHour);
         }
     }
 
-    private void mergeInfoMap(ConcurrentHashMap<String, Info> receivedMap, ConcurrentHashMap<String, Info> mainMap)
-    {
-        for (String infoName : receivedMap.keySet())
-        {
+    private void mergeInfoMap(ConcurrentHashMap<String, Info> receivedMap, ConcurrentHashMap<String, Info> mainMap) {
+        for (String infoName : receivedMap.keySet()) {
             Info info = receivedMap.get(infoName);
 
-            if (mainMap.containsKey(infoName))
-            {
+            if (mainMap.containsKey(infoName)) {
                 info.mergeInfo(mainMap.get(infoName));
-            } else
-            {
+            } else {
                 mainMap.put(infoName, info);
             }
         }
     }
 
-    public void clearData()
-    {
+    public void clearData() {
         userInfoMap.clear();
         repoInfoMap.clear();
         languageMap.clear();
@@ -168,21 +157,19 @@ public class DataParser implements Serializable{//todo statistics
         this.repoInfoMap = repoInfoMap;
     }
 
-    public ConcurrentHashMap<String, Integer> getLanguageMap()
-    {
+    public ConcurrentHashMap<String, Integer> getLanguageMap() {
         return languageMap;
     }
 
-    public void setLanguageMap(ConcurrentHashMap<String, Integer> languageMap)
-    {
+    public void setLanguageMap(ConcurrentHashMap<String, Integer> languageMap) {
         this.languageMap = languageMap;
     }
 
-    public String[] findAndGetTrends(){
-        String[] trends=new String[3]; //trends[0]:username //trends[1]:repoName //trends[2]:language
-        trends[0]=findInfoTrend(userInfoMap);
-        trends[1]=findInfoTrend(repoInfoMap);
-        trends[2]=findLanguageTrend(languageMap);
+    public String[] findAndGetTrends() {
+        String[] trends = new String[3]; //trends[0]:username //trends[1]:repoName //trends[2]:language
+        trends[0] = findInfoTrend(userInfoMap);
+        trends[1] = findInfoTrend(repoInfoMap);
+        trends[2] = findLanguageTrend(languageMap);
         return trends;
     }
 
@@ -190,7 +177,7 @@ public class DataParser implements Serializable{//todo statistics
         return languageMap.entrySet().stream().parallel().max(Comparator.comparing(Map.Entry::getValue)).get().getKey();
     }
 
-    private String findInfoTrend(ConcurrentHashMap<String,Info> infoMap){
-        return ((Map.Entry<String,Info>)infoMap.entrySet().stream().parallel().max(Comparator.comparing(Map.Entry::getValue)).get()).getKey();
+    private String findInfoTrend(ConcurrentHashMap<String, Info> infoMap) {
+        return ((Map.Entry<String, Info>) infoMap.entrySet().stream().parallel().max(Comparator.comparing(Map.Entry::getValue)).get()).getKey();
     }
 }
