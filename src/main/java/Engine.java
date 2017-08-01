@@ -7,9 +7,9 @@ import java.util.TimerTask;
 import java.util.concurrent.Semaphore;
 
 public class Engine {
-    private DataParser tenMinDataParser = new DataParser();
-    private DataParser oneHourDataParser = new DataParser();
-    private DataParser oneDayDataParser = new DataParser();
+    private Statistics tenMinStatistics = new Statistics();
+    private Statistics oneHourStatistics = new Statistics();
+    private Statistics oneDayStatistics = new Statistics();
     private Semaphore oneHourTimerSemaphore = new Semaphore(0);
     private Semaphore oneDayTimerSemaphore = new Semaphore(0);
     private File backupFile;
@@ -37,7 +37,7 @@ public class Engine {
             e.printStackTrace();
         }
 
-        Receiver receiver = new Receiver(tenMinDataParser, bufferedWriterBackup);
+        Receiver receiver = new Receiver(tenMinStatistics, bufferedWriterBackup);
         receiver.start();
         startTimers();
     }
@@ -68,9 +68,9 @@ public class Engine {
                     e.printStackTrace();
                 }
 
-                String[] trends = tenMinDataParser.findAndGetTrends();
-                oneHourDataParser.mergeData(tenMinDataParser);
-                tenMinDataParser.clearData();
+                String[] trends = tenMinStatistics.findAndGetTrends();
+                oneHourStatistics.mergeStatistics(tenMinStatistics);
+                tenMinStatistics.clearStatistics();
                 //<<<<<<<<<<<
                 FileWriter fileWriter;
 
@@ -84,9 +84,9 @@ public class Engine {
                 //>>>>>>>>>>>
 
                 try {
-                    bufferedWriterTenMin.write("\n" + time * 10 + " minutes\nuserName : " + trends[0] + "\nrepoName : " + trends[1] + "\nlanguage : " + trends[2]);
+                    bufferedWriterTenMin.write("\n\n" + time * 10 + " minutes\nuserName : " + trends[0] + "\nrepoName : " + trends[1] + "\nlanguage : " + trends[2]);
                     bufferedWriterTenMin.close();
-
+                    System.out.println("tenMinTrends.txt updated!");
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
@@ -124,13 +124,14 @@ public class Engine {
                     e.printStackTrace();
                 }
 
-                String[] trends = oneHourDataParser.findAndGetTrends();
-                oneDayDataParser.mergeData(oneHourDataParser);
-                oneHourDataParser.clearData();
+                String[] trends = oneHourStatistics.findAndGetTrends();
+                oneDayStatistics.mergeStatistics(oneHourStatistics);
+                oneHourStatistics.clearStatistics();
 
                 try {
-                    bufferedWriterOneHour.write("\n" + time / 6 + " hours\nuserName : " + trends[0] + "\nrepoName : " + trends[1] + "\nlanguage : " + trends[2]);
+                    bufferedWriterOneHour.write("\n\n" + time / 6 + " hours\nuserName : " + trends[0] + "\nrepoName : " + trends[1] + "\nlanguage : " + trends[2]);
                     bufferedWriterOneHour.close();
+                    System.out.println("oneHourTrends.txt updated!");
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
@@ -166,11 +167,12 @@ public class Engine {
                     e.printStackTrace();
                 }
 
-                String[] trends = oneDayDataParser.findAndGetTrends();
-                oneDayDataParser.clearData();
+                String[] trends = oneDayStatistics.findAndGetTrends();
+                oneDayStatistics.clearStatistics();
                 try {
-                    bufferedWriterOneDay.write("\n" + time / (6 * 24) + " days\nuserName : " + trends[0] + "\nrepoName : " + trends[1] + "\nlanguage : " + trends[2]);
+                    bufferedWriterOneDay.write("\n\n" + time / (6 * 24) + " days\nuserName : " + trends[0] + "\nrepoName : " + trends[1] + "\nlanguage : " + trends[2]);
                     bufferedWriterOneDay.close();
+                    System.out.println("oneHourTrends.txt updated!");
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
