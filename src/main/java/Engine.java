@@ -4,14 +4,14 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Timer;
 import java.util.TimerTask;
-import java.util.concurrent.Semaphore;
+import java.util.concurrent.CountDownLatch;
 
 public class Engine {
     private Statistics tenMinStatistics = new Statistics();
     private Statistics oneHourStatistics = new Statistics();
     private Statistics oneDayStatistics = new Statistics();
-    private Semaphore oneHourTimerSemaphore = new Semaphore(0);
-    private Semaphore oneDayTimerSemaphore = new Semaphore(0);
+    private CountDownLatch oneHourTimerLatch = new CountDownLatch(6);
+    private CountDownLatch oneDayTimerLatch = new CountDownLatch(24);
     private File backupFile;
     private File tenMinResults = new File("tenMinTrends.txt");
     private File oneHourResults = new File("oneHourTrends.txt");
@@ -67,41 +67,39 @@ public class Engine {
                     e.printStackTrace();
                 }
                 updateOutputFile(tenMinResults, trends, time * 10, "Minutes");
-                oneHourTimerSemaphore.release();
+                oneHourTimerLatch.countDown();
             }
         }, 1000 * 60 * 10, 1000 * 60 * 10);
 
         oneHourTimer.scheduleAtFixedRate(new TimerTask() {
             @Override
             public void run() {
-                for (int i = 0; i < 6; i++) {
-                    try {
-                        oneHourTimerSemaphore.acquire();
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
+                try {
+                    oneHourTimerLatch.await();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
                 }
                 String[] trends = oneHourStatistics.findAndGetTrends();
                 oneDayStatistics.mergeStatistics(oneHourStatistics);
                 oneHourStatistics.clearStatistics();
                 updateOutputFile(oneHourResults, trends, time / 6, "Hour");
-                oneDayTimerSemaphore.release();
+                oneDayTimerLatch.countDown();
+                oneHourTimerLatch = new CountDownLatch(6);
             }
         }, 1000 * 60 * 60, 1000 * 60 * 60);
 
         oneDayTimer.scheduleAtFixedRate(new TimerTask() {
             @Override
             public void run() {
-                for (int i = 0; i < 24; i++) {
-                    try {
-                        oneDayTimerSemaphore.acquire();
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
+                try {
+                    oneDayTimerLatch.await();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
                 }
                 String[] trends = oneDayStatistics.findAndGetTrends();
                 oneDayStatistics.clearStatistics();
                 updateOutputFile(oneDayResults, trends, time / (6 * 24), "Day");
+                oneHourTimerLatch = new CountDownLatch(24);
             }
         }, 1000 * 60 * 60 * 24, 1000 * 60 * 60 * 24);
     }
