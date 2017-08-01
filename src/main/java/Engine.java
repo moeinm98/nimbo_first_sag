@@ -1,7 +1,7 @@
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
+import java.io.*;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.Semaphore;
@@ -12,34 +12,86 @@ public class Engine {
     private Statistics oneDayStatistics = new Statistics();
     private Semaphore oneHourTimerSemaphore = new Semaphore(0);
     private Semaphore oneDayTimerSemaphore = new Semaphore(0);
-    private File backupFile;
+    private int tenMinTimerDelay;
+    private int oneHourTimerDelay;
+    private int oneDayTimerDelay;
     private int time; //number of 10 mins passed
 
     public void start() {
-        // todo: analyze the backup backupFile first, remember to add date to backupFile
+        // todo: analyze the backup tenMinBackupFile first, remember to add date to tenMinBackupFile
+        findBackupFiles();
+        findTimerDelays();
 
-        backupFile = new File("backup.txt");
-        FileWriter fileWriterBackup;
-        BufferedWriter bufferedWriterBackup = null;
 
-        if (!backupFile.exists()) {
-            try {
-                backupFile.createNewFile();
-            } catch (IOException e) {
+        Receiver receiver = new Receiver(tenMinStatistics);
+        receiver.start();
+        startTimers();
+    }
+
+    private void findTimerDelays()
+    {
+        DateFormat dateFormat = new SimpleDateFormat("HH:mm:ss");
+        Date date = new Date();
+        String time = dateFormat.format(date);
+        String[] timeParts = time.split(":");
+
+        findTenMinTimerDelay(timeParts);
+        findOneHourTimerDelay(timeParts);
+        findOneDayTimerDelay(timeParts);
+    }
+
+    private void findOneDayTimerDelay(String[] timeParts)
+    {
+        int secNum = Integer.parseInt(timeParts[2]);
+        int minNum = Integer.parseInt(timeParts[1]);
+        oneDayTimerDelay = ((60 - secNum) + 60*(60 - minNum)) * 1000;
+    }
+
+    private void findOneHourTimerDelay(String[] timeParts)
+    {
+        int secNum = Integer.parseInt(timeParts[2]);
+        int minNum = Integer.parseInt(timeParts[1]);
+        int hourNum = Integer.parseInt(timeParts[0]);
+        oneHourTimerDelay = ((60 - secNum) + 60*(10 - minNum) + (24 - hourNum)*3600) * 1000;
+    }
+
+    private void findTenMinTimerDelay(String[] timeParts)
+    {
+        int secNum = Integer.parseInt(timeParts[2]);
+        int minNum = Integer.parseInt(timeParts[1]) % 10;
+        tenMinTimerDelay = ((60 - secNum) + 60*(10 - minNum)) * 1000;
+    }
+
+    private void findBackupFiles()
+    {
+        File oneHourBackupFile = new File("oneHourBackup.data");
+        File oneDayBackupFile = new File("oneDatBackup.data");
+
+        if (oneHourBackupFile.exists())
+        {
+            try
+            {
+                FileInputStream receivingFileInputStream = new FileInputStream(oneHourBackupFile);
+                ObjectInputStream receivingObjectInputStream = new ObjectInputStream(receivingFileInputStream);
+                oneHourStatistics = (Statistics) receivingObjectInputStream.readObject();
+            } catch (IOException | ClassNotFoundException e)
+            {
                 e.printStackTrace();
             }
         }
 
-        try {
-            fileWriterBackup = new FileWriter(backupFile, true);
-            bufferedWriterBackup = new BufferedWriter(fileWriterBackup);
-        } catch (IOException e) {
-            e.printStackTrace();
+        if (oneDayBackupFile.exists())
+        {
+            try
+            {
+                FileInputStream receivingFileInputStream = new FileInputStream(oneDayBackupFile);
+                ObjectInputStream receivingObjectInputStream = new ObjectInputStream(receivingFileInputStream);
+                oneDayStatistics = (Statistics) receivingObjectInputStream.readObject();
+            } catch (IOException | ClassNotFoundException e)
+            {
+                e.printStackTrace();
+            }
         }
-
-        Receiver receiver = new Receiver(tenMinStatistics, bufferedWriterBackup);
-        receiver.start();
-        startTimers();
     }
 
     private void startTimers() {
@@ -70,17 +122,18 @@ public class Engine {
 
                 String[] trends = tenMinStatistics.findAndGetTrends();
                 oneHourStatistics.mergeStatistics(tenMinStatistics);
+                updateBackupFile("oneHourBackupFile.data", oneHourStatistics);
                 tenMinStatistics.clearStatistics();
                 //<<<<<<<<<<<
-                FileWriter fileWriter;
-
-                try { //todo ehtemalan kar nakhahad kard
-                    fileWriter = new FileWriter(backupFile);
-                    fileWriter.write("");
-                    fileWriter.close();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
+//                FileWriter fileWriter;
+//
+//                try { //todo ehtemalan kar nakhahad kard
+//                    fileWriter = new FileWriter(tenMinBackupFile);
+//                    fileWriter.write("");
+//                    fileWriter.close();
+//                } catch (IOException e) {
+//                    e.printStackTrace();
+//                }
                 //>>>>>>>>>>>
 
                 try {
@@ -94,7 +147,7 @@ public class Engine {
                 oneHourTimerSemaphore.release();
 
             }
-        }, 1000 * 60 * 10, 1000 * 60 * 10);
+        }, tenMinTimerDelay, 1000 * 60 * 10);
 
         oneHourTimer.scheduleAtFixedRate(new TimerTask() {
             @Override
@@ -126,6 +179,7 @@ public class Engine {
 
                 String[] trends = oneHourStatistics.findAndGetTrends();
                 oneDayStatistics.mergeStatistics(oneHourStatistics);
+                updateBackupFile("oneDayBackupFile.data", oneDayStatistics);
                 oneHourStatistics.clearStatistics();
 
                 try {
@@ -138,7 +192,7 @@ public class Engine {
 
                 oneDayTimerSemaphore.release();
             }
-        }, 1000 * 60 * 60, 1000 * 60 * 60);
+        }, oneHourTimerDelay, 1000 * 60 * 60);
 
         oneDayTimer.scheduleAtFixedRate(new TimerTask() {
             @Override
@@ -178,8 +232,21 @@ public class Engine {
                 }
 
             }
-        }, 1000 * 60 * 60 * 24, 1000 * 60 * 60 * 24);
+        }, oneDayTimerDelay, 1000 * 60 * 60 * 24);
 
 
+    }
+
+    private void updateBackupFile(String backupFileName, Statistics statistics)
+    {
+        try
+        {
+            FileOutputStream backupFileOutputStream = new FileOutputStream(backupFileName);
+            ObjectOutputStream backupObjectOutputStream = new ObjectOutputStream(backupFileOutputStream);
+            backupObjectOutputStream.writeObject(statistics);
+        } catch (IOException e)
+        {
+            e.printStackTrace();
+        }
     }
 }

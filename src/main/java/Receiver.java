@@ -12,9 +12,8 @@ public class Receiver {
     private Statistics statistics;
     private BufferedWriter bufferedWriter;
 
-    public Receiver(Statistics statistics, BufferedWriter bufferedWriter) {
+    public Receiver(Statistics statistics) {
         this.statistics = statistics;
-        this.bufferedWriter = bufferedWriter;
     }
 
     public void start() {
@@ -33,15 +32,6 @@ public class Receiver {
                     public void onSubscriptionData(SubscriptionData data) {
                         for (AnyJson json : data.getMessages()) {
                             String message = json.toString();
-
-                            try
-                            {
-                                bufferedWriter.write(message);
-                                bufferedWriter.flush();
-                            } catch (IOException e)
-                            {
-                                e.printStackTrace();
-                            }
                             statistics.updateStatistics(message);
                         }
                     }

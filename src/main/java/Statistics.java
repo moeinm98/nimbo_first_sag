@@ -9,13 +9,16 @@ public class Statistics implements Serializable {//todo statistics
     private ConcurrentHashMap<String, Info> userInfoMap = new ConcurrentHashMap<>();
     private ConcurrentHashMap<String, Info> repoInfoMap = new ConcurrentHashMap<>();
     private ConcurrentHashMap<String, Integer> languageMap = new ConcurrentHashMap<>();
+    private String finalUpdateTime;
 
     public void updateStatistics(String jsonString) {
         JSONObject jsonObject = new JSONObject(jsonString);
 
+        String creationDate = jsonObject.getString("created_at");
+        finalUpdateTime = creationDate.substring(creationDate.indexOf('T') + 1, creationDate.indexOf('Z'));
+
         updateUserInfo(jsonObject);
         updateRepoInfo(jsonObject);
-
     }
 
     private void updateRepoInfo(JSONObject jsonObject) {
@@ -178,6 +181,16 @@ public class Statistics implements Serializable {//todo statistics
     }
 
     private String findInfoTrend(ConcurrentHashMap<String, Info> infoMap) {
-        return ((Map.Entry<String, Info>) infoMap.entrySet().stream().parallel().max(Comparator.comparing(Map.Entry::getValue)).get()).getKey();
+        return infoMap.entrySet().stream().parallel().max(Comparator.comparing(Map.Entry::getValue)).get().getKey();
+    }
+
+    public String getFinalUpdateTime()
+    {
+        return finalUpdateTime;
+    }
+
+    public void setFinalUpdateTime(String finalUpdateTime)
+    {
+        this.finalUpdateTime = finalUpdateTime;
     }
 }
