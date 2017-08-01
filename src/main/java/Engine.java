@@ -6,122 +6,175 @@ import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.Semaphore;
 
-public class Engine
-{
+public class Engine {
     private DataParser tenMinDataParser = new DataParser();
     private DataParser oneHourDataParser = new DataParser();
     private DataParser oneDayDataParser = new DataParser();
     private Semaphore oneHourTimerSemaphore = new Semaphore(0);
     private Semaphore oneDayTimerSemaphore = new Semaphore(0);
-    private File file;
+    private File backupFile;
+    private int time; //number of 10 mins passed
 
-    public void start()
-    {
-        // todo: analyze the backup file first, remember to add date to backup file
+    public void start() {
+        // todo: analyze the backup backupFile first, remember to add date to backupFile
 
-        file = new File("backup.txt");
-        FileWriter fileWriter = null;
-        BufferedWriter bufferedWriter = null;
+        backupFile = new File("backup.txt");
+        FileWriter fileWriterBackup;
+        BufferedWriter bufferedWriterBackup = null;
 
-        if (!file.exists())
-        {
-            try
-            {
-                file.createNewFile();
-            } catch (IOException e)
-            {
+        if (!backupFile.exists()) {
+            try {
+                backupFile.createNewFile();
+            } catch (IOException e) {
                 e.printStackTrace();
             }
         }
 
-        try
-        {
-            fileWriter = new FileWriter(file, true);
-            bufferedWriter = new BufferedWriter(fileWriter);
-        } catch (IOException e)
-        {
+        try {
+            fileWriterBackup = new FileWriter(backupFile, true);
+            bufferedWriterBackup = new BufferedWriter(fileWriterBackup);
+        } catch (IOException e) {
             e.printStackTrace();
         }
 
-        Receiver receiver = new Receiver(tenMinDataParser, bufferedWriter);
+        Receiver receiver = new Receiver(tenMinDataParser, bufferedWriterBackup);
         receiver.start();
         startTimers();
     }
 
-    private void startTimers()
-    {
+    private void startTimers() {
         Timer tenMinTimer = new Timer();
         Timer oneHourTimer = new Timer();
         Timer oneDayTimer = new Timer();
 
-        tenMinTimer.scheduleAtFixedRate(new TimerTask()
-        {
+        tenMinTimer.scheduleAtFixedRate(new TimerTask() {
             @Override
-            public void run()
-            {
-                //todo update data
-                oneHourDataParser.mergeData(tenMinDataParser);
-                tenMinDataParser.clearData();
-
-                oneHourTimerSemaphore.release();
-
-                FileWriter fileWriter;
-
-                try
-                {
-                    fileWriter = new FileWriter(file);
-                    fileWriter.write("");
-                    fileWriter.close();
-                } catch (IOException e)
-                {
+            public void run() {
+                time++;
+                File tenMinResults = new File("tenMinTrends.txt");
+                FileWriter fileWriterTenMin;
+                BufferedWriter bufferedWriterTenMin = null;
+                if (!tenMinResults.exists()) {
+                    try {
+                        tenMinResults.createNewFile();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+                try {
+                    fileWriterTenMin = new FileWriter(tenMinResults, true);
+                    bufferedWriterTenMin = new BufferedWriter(fileWriterTenMin);
+                } catch (IOException e) {
                     e.printStackTrace();
                 }
+
+                String[] trends = tenMinDataParser.findAndGetTrends();
+                oneHourDataParser.mergeData(tenMinDataParser);
+                tenMinDataParser.clearData();
+                //<<<<<<<<<<<
+                FileWriter fileWriter;
+
+                try { //todo ehtemalan kar nakhahad kard
+                    fileWriter = new FileWriter(backupFile);
+                    fileWriter.write("");
+                    fileWriter.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                //>>>>>>>>>>>
+
+                try {
+                    bufferedWriterTenMin.write("\n" + time * 10 + " minutes\nuserName : " + trends[0] + "\nrepoName : " + trends[1] + "\nlanguage : " + trends[2]);
+                    bufferedWriterTenMin.close();
+
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+
+                oneHourTimerSemaphore.release();
 
             }
         }, 1000 * 60 * 10, 1000 * 60 * 10);
 
-        oneHourTimer.scheduleAtFixedRate(new TimerTask()
-        {
+        oneHourTimer.scheduleAtFixedRate(new TimerTask() {
             @Override
-            public void run()
-            {
-                for (int i = 0; i < 6; i++)
-                {
-                    try
-                    {
+            public void run() {
+                for (int i = 0; i < 6; i++) {
+                    try {
                         oneHourTimerSemaphore.acquire();
-                    } catch (InterruptedException e)
-                    {
+                    } catch (InterruptedException e) {
                         e.printStackTrace();
                     }
                 }
 
-                //todo update data
+                File oneHourResults = new File("oneHourTrends.txt");
+                FileWriter fileWriterOneHour;
+                BufferedWriter bufferedWriterOneHour = null;
+                if (!oneHourResults.exists()) {
+                    try {
+                        oneHourResults.createNewFile();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+                try {
+                    fileWriterOneHour = new FileWriter(oneHourResults, true);
+                    bufferedWriterOneHour = new BufferedWriter(fileWriterOneHour);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+
+                String[] trends = oneHourDataParser.findAndGetTrends();
                 oneDayDataParser.mergeData(oneHourDataParser);
                 oneHourDataParser.clearData();
+
+                try {
+                    bufferedWriterOneHour.write("\n" + time / 6 + " hours\nuserName : " + trends[0] + "\nrepoName : " + trends[1] + "\nlanguage : " + trends[2]);
+                    bufferedWriterOneHour.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
 
                 oneDayTimerSemaphore.release();
             }
         }, 1000 * 60 * 60, 1000 * 60 * 60);
 
-        oneDayTimer.scheduleAtFixedRate(new TimerTask()
-        {
+        oneDayTimer.scheduleAtFixedRate(new TimerTask() {
             @Override
-            public void run()
-            {
-                for (int i = 0; i < 24; i++)
-                {
-                    try
-                    {
+            public void run() {
+                for (int i = 0; i < 24; i++) {
+                    try {
                         oneDayTimerSemaphore.acquire();
-                    } catch (InterruptedException e)
-                    {
+                    } catch (InterruptedException e) {
                         e.printStackTrace();
                     }
                 }
+                File oneDayResults = new File("oneDayTrends.txt");
+                FileWriter fileWriterOneDay;
+                BufferedWriter bufferedWriterOneDay = null;
+                if (!oneDayResults.exists()) {
+                    try {
+                        oneDayResults.createNewFile();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+                try {
+                    fileWriterOneDay = new FileWriter(oneDayResults, true);
+                    bufferedWriterOneDay = new BufferedWriter(fileWriterOneDay);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
 
-                //todo update data
+                String[] trends = oneDayDataParser.findAndGetTrends();
                 oneDayDataParser.clearData();
+                try {
+                    bufferedWriterOneDay.write("\n" + time / (6 * 24) + " days\nuserName : " + trends[0] + "\nrepoName : " + trends[1] + "\nlanguage : " + trends[2]);
+                    bufferedWriterOneDay.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+
             }
         }, 1000 * 60 * 60 * 24, 1000 * 60 * 60 * 24);
 
