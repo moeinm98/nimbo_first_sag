@@ -5,12 +5,12 @@ import java.util.Comparator;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class DataParser implements Serializable {//todo statistics
+public class Statistics implements Serializable {//todo statistics
     private ConcurrentHashMap<String, Info> userInfoMap = new ConcurrentHashMap<>();
     private ConcurrentHashMap<String, Info> repoInfoMap = new ConcurrentHashMap<>();
     private ConcurrentHashMap<String, Integer> languageMap = new ConcurrentHashMap<>();
 
-    public void parseData(String jsonString) {
+    public void updateStatistics(String jsonString) {
         JSONObject jsonObject = new JSONObject(jsonString);
 
         updateUserInfo(jsonObject);
@@ -101,10 +101,10 @@ public class DataParser implements Serializable {//todo statistics
         }
     }
 
-    public void mergeData(DataParser tenMinDataParser) {
-        ConcurrentHashMap<String, Info> tenMinUserInfoMap = tenMinDataParser.getUserInfoMap();
-        ConcurrentHashMap<String, Info> tenMinRepoInfoMap = tenMinDataParser.getRepoInfoMap();
-        ConcurrentHashMap<String, Integer> tenMinLanguageMap = tenMinDataParser.getLanguageMap();
+    public void mergeStatistics(Statistics tenMinStatistics) {
+        ConcurrentHashMap<String, Info> tenMinUserInfoMap = tenMinStatistics.getUserInfoMap();
+        ConcurrentHashMap<String, Info> tenMinRepoInfoMap = tenMinStatistics.getRepoInfoMap();
+        ConcurrentHashMap<String, Integer> tenMinLanguageMap = tenMinStatistics.getLanguageMap();
 
         mergeInfoMap(tenMinUserInfoMap, userInfoMap);
         mergeInfoMap(tenMinRepoInfoMap, repoInfoMap);
@@ -135,7 +135,7 @@ public class DataParser implements Serializable {//todo statistics
         }
     }
 
-    public void clearData() {
+    public void clearStatistics() {
         userInfoMap.clear();
         repoInfoMap.clear();
         languageMap.clear();
