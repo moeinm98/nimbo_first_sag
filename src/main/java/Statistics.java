@@ -9,6 +9,7 @@ public class Statistics implements Serializable {
     private ConcurrentHashMap<String, Info> userInfoMap = new ConcurrentHashMap<>();
     private ConcurrentHashMap<String, Info> repoInfoMap = new ConcurrentHashMap<>();
     private ConcurrentHashMap<String, Integer> languageMap = new ConcurrentHashMap<>();
+    private ConcurrentHashMap<String, Integer> organizationMap = new ConcurrentHashMap<>();
     private String finalUpdateTime;
 
     public void updateStatistics(String jsonString) {
@@ -75,9 +76,11 @@ public class Statistics implements Serializable {
             case "PullRequestEvent":
                 info.setPullRequestNum(info.getPullRequestNum() + 1);
                 extractLanguage(jsonObject);
+                extractOrganization(jsonObject);
                 break;
             case "PushEvent":
-                int commitNum = jsonObject.getJSONObject("payload").getJSONArray("commits").length();
+//                int commitNum = jsonObject.getJSONObject("payload").getJSONArray("commits").length(); //. notcommented _ commented
+                int commitNum=1;
                 info.setCommitNum(commitNum + info.getCommitNum());
 //                System.out.println(jsonObject.getJSONObject("payload").getJSONArray("commits"));
                 break;
@@ -90,6 +93,17 @@ public class Statistics implements Serializable {
             case "WatchEvent":
                 info.setWatchNum(info.getWatchNum() + 1);
                 break;
+        }
+    }
+
+    private void extractOrganization(JSONObject jsonObject) {
+        JSONObject orgObject = jsonObject.getJSONObject("org");
+        String organizationName = orgObject.getString("login");
+
+        if (!organizationMap.containsKey(organizationName)) {//todo
+            organizationMap.put(organizationName, 1);
+        } else {
+            organizationMap.put(organizationName, organizationMap.get(organizationName) + 1);
         }
     }
 

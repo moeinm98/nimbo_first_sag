@@ -14,8 +14,8 @@ public class Engine {
     private int tenMinTimerDelay;
     private int oneHourTimerDelay;
     private int oneDayTimerDelay;
-    private CountDownLatch oneHourTimerLatch = new CountDownLatch(5);
-    private CountDownLatch oneDayTimerLatch = new CountDownLatch(2);
+    private CountDownLatch oneHourTimerLatch = new CountDownLatch(6);
+    private CountDownLatch oneDayTimerLatch = new CountDownLatch(24);
     private File tenMinResults = new File("tenMinTrends.txt");
     private File oneHourResults = new File("oneHourTrends.txt");
     private File oneDayResults = new File("oneDayTrends.txt");
@@ -51,20 +51,20 @@ public class Engine {
     private void findOneDayTimerDelay(String[] timeParts) {
         int secNum = Integer.parseInt(timeParts[2]);
         int minNum = Integer.parseInt(timeParts[1]);
-        oneDayTimerDelay = ((60 - secNum) + 60 * (60 - minNum)) * 1000;
+        int hourNum = Integer.parseInt(timeParts[0]);
+        oneDayTimerDelay = ((60 - secNum) + 60 * (10 - minNum) + (24 - hourNum) * 3600) * 1000;
     }
 
     private void findOneHourTimerDelay(String[] timeParts) {
         int secNum = Integer.parseInt(timeParts[2]);
-        int minNum = Integer.parseInt(timeParts[1]);
-        int hourNum = Integer.parseInt(timeParts[0]);
-        oneHourTimerDelay = ((60 - secNum) + 60 * (10 - minNum) + (24 - hourNum) * 3600) * 1000;
+        int minNum = Integer.parseInt(timeParts[1]) % 10;
+        oneHourTimerDelay = ((60 - secNum) + 60 * (60 - minNum)) * 1000; //todo set time field
     }
 
     private void findTenMinTimerDelay(String[] timeParts) {
         int secNum = Integer.parseInt(timeParts[2]);
         int minNum = Integer.parseInt(timeParts[1]) % 10;
-        tenMinTimerDelay = ((60 - secNum) + 60 * (10 - minNum)) * 1000;
+        tenMinTimerDelay = ((60 - secNum) + 60 * (10 - minNum)) * 1000; //todo set time field
     }
 
     private void findBackupFiles() {
@@ -130,7 +130,7 @@ public class Engine {
                 updateBackupFile("oneDateBackup.data", oneDayStatistics);
 
                 oneDayTimerLatch.countDown();
-                oneHourTimerLatch = new CountDownLatch(5);
+                oneHourTimerLatch = new CountDownLatch(6);
             }
         }, oneHourTimerDelay, 1000 * 60 * 60);
 
@@ -148,7 +148,7 @@ public class Engine {
                 oneDayStatistics.clearStatistics();
                 updateOutputFile(oneDayResults, trends, time / (6 * 24), "Day");
 
-                oneHourTimerLatch = new CountDownLatch(2);
+                oneHourTimerLatch = new CountDownLatch(24);
             }
         }, oneDayTimerDelay, 1000 * 60 * 60 * 24);
     }
