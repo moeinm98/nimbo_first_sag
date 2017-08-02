@@ -5,6 +5,6 @@ target/
 tenMinTrends.txt
 oneHourTrends.txt
 oneDayTrends.txt
-oneHourBackupFile.data
+oneHourBackup.data
 out/
 test/

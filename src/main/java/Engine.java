@@ -157,7 +157,9 @@ public class Engine {
         try {
             FileWriter fileWriter = new FileWriter(file, true);
             BufferedWriter bufferedWriter = new BufferedWriter(fileWriter);
-            bufferedWriter.write("\n\n" + time + " " + timeUnit + "\nuserName : " + trends[0].toString() + "\nrepoName : " + trends[1].toString() + "\nlanguage : " + trends[2].toString());
+            bufferedWriter.write("\n\n" + time + " " + timeUnit + "\nuserName : " + trends[0].toString()
+                    + "\nrepoName : " + trends[1].toString() + "\nlanguage : " + trends[2].toString() + "\norganization : "
+                    + trends[3].toString());
             bufferedWriter.close();
             System.out.println(file.getName() + " UPDATED!");
         } catch (IOException e) {

@@ -119,25 +119,35 @@ public class Statistics implements Serializable {
         }
     }
 
-    public void mergeStatistics(Statistics tenMinStatistics) {
-        ConcurrentHashMap<String, Info> tenMinUserInfoMap = tenMinStatistics.getUserInfoMap();
-        ConcurrentHashMap<String, Info> tenMinRepoInfoMap = tenMinStatistics.getRepoInfoMap();
-        ConcurrentHashMap<String, Integer> tenMinLanguageMap = tenMinStatistics.getLanguageMap();
-
-        mergeInfoMap(tenMinUserInfoMap, userInfoMap);
-        mergeInfoMap(tenMinRepoInfoMap, repoInfoMap);
-        mergeLanguageMap(tenMinLanguageMap);
+    public ConcurrentHashMap<String, Integer> getOrganizationMap() {
+        return organizationMap;
     }
 
-    private void mergeLanguageMap(ConcurrentHashMap<String, Integer> tenMinLanguageMap) {
-        for (String languageName : tenMinLanguageMap.keySet()) {
-            int languageRepeatedInThisHour = 0;
-            int languageRepeatedInTenMins;
-            if (languageMap.containsKey(languageName)) {
-                languageRepeatedInThisHour = languageMap.get(languageName);
+    public void setOrganizationMap(ConcurrentHashMap<String, Integer> organizationMap) {
+        this.organizationMap = organizationMap;
+    }
+
+    public void mergeStatistics(Statistics statistics) {
+        ConcurrentHashMap<String, Info> userInfoMap = statistics.getUserInfoMap();
+        ConcurrentHashMap<String, Info> repoInfoMap = statistics.getRepoInfoMap();
+        ConcurrentHashMap<String, Integer> languageMap = statistics.getLanguageMap();
+        ConcurrentHashMap<String, Integer> organizationMap = statistics.getOrganizationMap();
+
+        mergeInfoMap(userInfoMap, userInfoMap);
+        mergeInfoMap(repoInfoMap, repoInfoMap);
+        mergeIntegerMap(languageMap);
+        mergeIntegerMap(organizationMap);
+    }
+
+    private void mergeIntegerMap(ConcurrentHashMap<String, Integer> languageMap) {
+        for (String name : languageMap.keySet()) {
+            int languageRepeatedInThisHourOrday = 0;
+            int languageRepeatedInTenMinsOrHour;
+            if (this.languageMap.containsKey(name)) {
+                languageRepeatedInThisHourOrday = this.languageMap.get(name);
             }
-            languageRepeatedInTenMins = tenMinLanguageMap.get(languageName);
-            languageMap.put(languageName, languageRepeatedInTenMins + languageRepeatedInThisHour);
+            languageRepeatedInTenMinsOrHour = languageMap.get(name);
+            this.languageMap.put(name, languageRepeatedInTenMinsOrHour + languageRepeatedInThisHourOrday);
         }
     }
 
@@ -184,14 +194,15 @@ public class Statistics implements Serializable {
     }
 
     public Object[] findAndGetTrends() {
-        Object[] trends = new Object[3]; //trends[0]:username //trends[1]:repoName //trends[2]:language
+        Object[] trends = new Object[4]; //trends[0]:username //trends[1]:repoName //trends[2]:language
         trends[0] = findInfoTrend(userInfoMap);
         trends[1] = findInfoTrend(repoInfoMap);
-        trends[2] = findLanguageTrend(languageMap);
+        trends[2] = findIntegerTrend(languageMap);
+        trends[3] = findIntegerTrend(organizationMap);
         return trends;
     }
 
-    private String findLanguageTrend(ConcurrentHashMap<String, Integer> languageMap) {
+    private String findIntegerTrend(ConcurrentHashMap<String, Integer> languageMap) {
         return languageMap.entrySet().stream().parallel().max(Comparator.comparing(Map.Entry::getValue)).get().getKey();
     }
 
