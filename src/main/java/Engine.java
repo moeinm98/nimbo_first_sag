@@ -1,10 +1,13 @@
-import java.io.*;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Timer;
 import java.util.TimerTask;
-import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.CountDownLatch;;
 
 public class Engine {
     private Statistics tenMinStatistics = new Statistics();
@@ -20,7 +23,8 @@ public class Engine {
     private File oneHourResults = new File("oneHourTrends.txt");
     private File oneDayResults = new File("oneDayTrends.txt");
 
-    public void start() {
+    public void start() throws IOException, ClassNotFoundException
+    {
         findBackupFiles();
         findTimerDelays();
 
@@ -67,29 +71,15 @@ public class Engine {
         tenMinTimerDelay = ((60 - secNum) + 60 * (10 - minNum)) * 1000; //todo set time field
     }
 
-    private void findBackupFiles() {
+    private void findBackupFiles() throws IOException, ClassNotFoundException
+    {
+        File tenMinBackupFile = new File("tenMinBackup.data");
         File oneHourBackupFile = new File("oneHourBackup.data");
-        File oneDayBackupFile = new File("oneDateBackup.data");
+        File oneDayBackupFile = new File("oneDayBackup.data");
 
-        if (oneHourBackupFile.exists()) {
-            try {
-                FileInputStream receivingFileInputStream = new FileInputStream(oneHourBackupFile);
-                ObjectInputStream receivingObjectInputStream = new ObjectInputStream(receivingFileInputStream);
-                oneHourStatistics = (Statistics) receivingObjectInputStream.readObject();
-            } catch (IOException | ClassNotFoundException e) {
-                e.printStackTrace();
-            }
-        }
-
-        if (oneDayBackupFile.exists()) {
-            try {
-                FileInputStream receivingFileInputStream = new FileInputStream(oneDayBackupFile);
-                ObjectInputStream receivingObjectInputStream = new ObjectInputStream(receivingFileInputStream);
-                oneDayStatistics = (Statistics) receivingObjectInputStream.readObject();
-            } catch (IOException | ClassNotFoundException e) {
-                e.printStackTrace();
-            }
-        }
+        tenMinStatistics = BackupHandler.getBackupIfExists(tenMinBackupFile);
+        oneHourStatistics = BackupHandler.getBackupIfExists(oneHourBackupFile);
+        oneDayStatistics = BackupHandler.getBackupIfExists(oneDayBackupFile);
     }
 
     private void startTimers() {
@@ -107,7 +97,13 @@ public class Engine {
                 oneHourStatistics.mergeStatistics(tenMinStatistics);
                 tenMinStatistics.clearStatistics();
                 updateOutputFile(tenMinResults, trends, time * 10, "Minutes");
-                updateBackupFile("oneHourBackup.data", oneHourStatistics);
+                try
+                {
+                    BackupHandler.updateBackupFile("oneHourBackup.data", oneHourStatistics);
+                } catch (IOException e)
+                {
+                    e.printStackTrace();
+                }
 
                 oneHourTimerLatch.countDown();
             }
@@ -127,7 +123,13 @@ public class Engine {
                 oneDayStatistics.mergeStatistics(oneHourStatistics);
                 oneHourStatistics.clearStatistics();
                 updateOutputFile(oneHourResults, trends, time / 6, "Hour");
-                updateBackupFile("oneDateBackup.data", oneDayStatistics);
+                try
+                {
+                    BackupHandler.updateBackupFile("oneDayBackup.data", oneDayStatistics);
+                } catch (IOException e)
+                {
+                    e.printStackTrace();
+                }
 
                 oneDayTimerLatch.countDown();
                 oneHourTimerLatch = new CountDownLatch(6);
@@ -162,16 +164,6 @@ public class Engine {
                     + trends[3].toString());
             bufferedWriter.close();
             System.out.println(file.getName() + " UPDATED!");
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    private void updateBackupFile(String backupFileName, Statistics statistics) {
-        try {
-            FileOutputStream backupFileOutputStream = new FileOutputStream(backupFileName);
-            ObjectOutputStream backupObjectOutputStream = new ObjectOutputStream(backupFileOutputStream);
-            backupObjectOutputStream.writeObject(statistics);
         } catch (IOException e) {
             e.printStackTrace();
         }
