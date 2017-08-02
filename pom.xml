@@ -36,7 +36,7 @@
                             <archive>
                                 <manifest>
                                     <addClasspath>true</addClasspath>
-                                    <mainClass>Main</mainClass>
+                                    <mainClass>ir.sahab.nimbo.githubTrends.Main</mainClass>
                                 </manifest>
                             </archive>
                             <descriptorRefs>
@@ -55,7 +55,7 @@
                     <target>1.8</target>
                 </configuration>
             </plugin>
-            
+
         </plugins>
 
     </build>
