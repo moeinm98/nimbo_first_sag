@@ -20,8 +20,8 @@ public class Engine {
     private int tenMinTimerDelay;
     private int oneHourTimerDelay;
     private int oneDayTimerDelay;
-    private CountDownLatch oneHourTimerLatch = new CountDownLatch(6);
-    private CountDownLatch oneDayTimerLatch = new CountDownLatch(24);
+    private CountDownLatch oneHourTimerLatch;
+    private CountDownLatch oneDayTimerLatch;
     private File tenMinResults = new File("tenMinTrends.txt");
     private File oneHourResults = new File("oneHourTrends.txt");
     private File oneDayResults = new File("oneDayTrends.txt");
@@ -58,13 +58,16 @@ public class Engine {
         int secNum = Integer.parseInt(timeParts[2]);
         int minNum = Integer.parseInt(timeParts[1]);
         int hourNum = Integer.parseInt(timeParts[0]);
+        oneDayTimerLatch = new CountDownLatch(24 - hourNum);
         oneDayTimerDelay = ((60 - secNum) + 60 * (10 - minNum - 1) + (24 - hourNum - 1) * 3600) * 1000;
     }
 
     private void findOneHourTimerDelay(String[] timeParts) {
         int secNum = Integer.parseInt(timeParts[2]);
-        int minNum = Integer.parseInt(timeParts[1]) % 10;
+        int minNum = Integer.parseInt(timeParts[1]);
+        oneHourTimerLatch = new CountDownLatch(((60 - minNum) / 10) + 1);
         oneHourTimerDelay = ((60 - secNum) + 60 * (60 - minNum - 1)) * 1000;
+
     }
 
     private void findTenMinTimerDelay(String[] timeParts) {

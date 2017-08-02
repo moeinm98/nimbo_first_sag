@@ -6,6 +6,7 @@ import org.json.JSONObject;
 import java.io.Serializable;
 import java.util.Comparator;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class Statistics implements Serializable {
@@ -208,11 +209,17 @@ public class Statistics implements Serializable {
     }
 
     private String findIntegerTrend(ConcurrentHashMap<String, Integer> languageMap) {
-        return languageMap.entrySet().stream().parallel().max(Comparator.comparing(Map.Entry::getValue)).get().getKey();
+        Optional<Map.Entry<String,Integer>> optional=languageMap.entrySet().stream().parallel().max(Comparator.comparing(Map.Entry::getValue));
+        if (optional.isPresent())
+            return optional.get().getKey();
+         return "null";
     }
 
     private Info findInfoTrend(ConcurrentHashMap<String, Info> infoMap) {
-        return ((Map.Entry<String, Info>) infoMap.entrySet().stream().parallel().max(Comparator.comparing(Map.Entry::getValue)).get()).getValue();
+        Optional<Map.Entry<String,Info>> optional= infoMap.entrySet().stream().parallel().max(Comparator.comparing(Map.Entry::getValue));
+        if (optional.isPresent())
+            return optional.get().getValue();
+        return new UserInfo("null");
     }
 
     public String getFinalUpdateTime() {
