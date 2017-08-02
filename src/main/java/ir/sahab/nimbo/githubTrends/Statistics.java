@@ -1,5 +1,6 @@
 package ir.sahab.nimbo.githubTrends;
 
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.Serializable;
@@ -49,6 +50,7 @@ public class Statistics implements Serializable {
     }
 
     private void updateInfoFields(Info info, JSONObject jsonObject) {
+        extractOrganization(jsonObject);
         String type = jsonObject.getString("type");
         switch (type) {
             case "CommitCommentEvent":
@@ -78,7 +80,6 @@ public class Statistics implements Serializable {
             case "PullRequestEvent":
                 info.setPullRequestNum(info.getPullRequestNum() + 1);
                 extractLanguage(jsonObject);
-                extractOrganization(jsonObject);
                 break;
             case "PushEvent":
                 int commitNum = jsonObject.getJSONObject("payload").getJSONArray("commits").length(); //. notcommented _ commented
@@ -97,13 +98,17 @@ public class Statistics implements Serializable {
     }
 
     private void extractOrganization(JSONObject jsonObject) {
-        JSONObject orgObject = jsonObject.getJSONObject("org");
-        String organizationName = orgObject.getString("login");
-
-        if (!organizationMap.containsKey(organizationName)) {
-            organizationMap.put(organizationName, 1);
-        } else {
-            organizationMap.put(organizationName, organizationMap.get(organizationName) + 1);
+        try {
+            JSONObject orgObject = jsonObject.getJSONObject("org");
+            if (orgObject != null) {
+                String organizationName = orgObject.getString("login");
+                if (!organizationMap.containsKey(organizationName)) {
+                    organizationMap.put(organizationName, 1);
+                } else {
+                    organizationMap.put(organizationName, organizationMap.get(organizationName) + 1);
+                }
+            }
+        } catch (JSONException ignored) {
         }
     }
 
@@ -207,16 +212,14 @@ public class Statistics implements Serializable {
     }
 
     private Info findInfoTrend(ConcurrentHashMap<String, Info> infoMap) {
-        return ((Map.Entry<String,Info>)infoMap.entrySet().stream().parallel().max(Comparator.comparing(Map.Entry::getValue)).get()).getValue();
+        return ((Map.Entry<String, Info>) infoMap.entrySet().stream().parallel().max(Comparator.comparing(Map.Entry::getValue)).get()).getValue();
     }
 
-    public String getFinalUpdateTime()
-    {
+    public String getFinalUpdateTime() {
         return finalUpdateTime;
     }
 
-    public void setFinalUpdateTime(String finalUpdateTime)
-    {
+    public void setFinalUpdateTime(String finalUpdateTime) {
         this.finalUpdateTime = finalUpdateTime;
     }
 }
