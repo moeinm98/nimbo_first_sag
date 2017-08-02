@@ -1,3 +1,5 @@
+package ir.sahab.nimbo.githubTrends;
+
 import java.io.IOException;
 
 public class Main {

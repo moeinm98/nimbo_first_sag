@@ -1,3 +1,7 @@
+package ir.sahab.nimbo.githubTrends;
+
+import ir.sahab.nimbo.utils.BackupHandler;
+
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
@@ -7,13 +11,12 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Timer;
 import java.util.TimerTask;
-import java.util.concurrent.CountDownLatch;;
+import java.util.concurrent.CountDownLatch;
 
 public class Engine {
     private Statistics tenMinStatistics = new Statistics();
     private Statistics oneHourStatistics = new Statistics();
     private Statistics oneDayStatistics = new Statistics();
-    private int time; //number of 10 minutes passed
     private int tenMinTimerDelay;
     private int oneHourTimerDelay;
     private int oneDayTimerDelay;
@@ -23,8 +26,7 @@ public class Engine {
     private File oneHourResults = new File("oneHourTrends.txt");
     private File oneDayResults = new File("oneDayTrends.txt");
 
-    public void start() throws IOException, ClassNotFoundException
-    {
+    public void start() throws IOException, ClassNotFoundException {
         findBackupFiles();
         findTimerDelays();
 
@@ -56,23 +58,22 @@ public class Engine {
         int secNum = Integer.parseInt(timeParts[2]);
         int minNum = Integer.parseInt(timeParts[1]);
         int hourNum = Integer.parseInt(timeParts[0]);
-        oneDayTimerDelay = ((60 - secNum) + 60 * (10 - minNum) + (24 - hourNum) * 3600) * 1000;
+        oneDayTimerDelay = ((60 - secNum) + 60 * (10 - minNum - 1) + (24 - hourNum - 1) * 3600) * 1000;
     }
 
     private void findOneHourTimerDelay(String[] timeParts) {
         int secNum = Integer.parseInt(timeParts[2]);
         int minNum = Integer.parseInt(timeParts[1]) % 10;
-        oneHourTimerDelay = ((60 - secNum) + 60 * (60 - minNum)) * 1000; //todo set time field
+        oneHourTimerDelay = ((60 - secNum) + 60 * (60 - minNum - 1)) * 1000;
     }
 
     private void findTenMinTimerDelay(String[] timeParts) {
         int secNum = Integer.parseInt(timeParts[2]);
         int minNum = Integer.parseInt(timeParts[1]) % 10;
-        tenMinTimerDelay = ((60 - secNum) + 60 * (10 - minNum)) * 1000; //todo set time field
+        tenMinTimerDelay = ((60 - secNum) + 60 * (10 - minNum - 1)) * 1000;
     }
 
-    private void findBackupFiles() throws IOException, ClassNotFoundException
-    {
+    private void findBackupFiles() throws IOException, ClassNotFoundException {
         File tenMinBackupFile = new File("tenMinBackup.data");
         File oneHourBackupFile = new File("oneHourBackup.data");
         File oneDayBackupFile = new File("oneDayBackup.data");
@@ -90,18 +91,15 @@ public class Engine {
         tenMinTimer.scheduleAtFixedRate(new TimerTask() {
             @Override
             public void run() {
-                time++;
 
                 Object[] trends = tenMinStatistics.findAndGetTrends();
 
                 oneHourStatistics.mergeStatistics(tenMinStatistics);
                 tenMinStatistics.clearStatistics();
-                updateOutputFile(tenMinResults, trends, time * 10, "Minutes");
-                try
-                {
+                updateOutputFile(tenMinResults, trends);
+                try {
                     BackupHandler.updateBackupFile("oneHourBackup.data", oneHourStatistics);
-                } catch (IOException e)
-                {
+                } catch (IOException e) {
                     e.printStackTrace();
                 }
 
@@ -122,12 +120,10 @@ public class Engine {
 
                 oneDayStatistics.mergeStatistics(oneHourStatistics);
                 oneHourStatistics.clearStatistics();
-                updateOutputFile(oneHourResults, trends, time / 6, "Hour");
-                try
-                {
+                updateOutputFile(oneHourResults, trends);
+                try {
                     BackupHandler.updateBackupFile("oneDayBackup.data", oneDayStatistics);
-                } catch (IOException e)
-                {
+                } catch (IOException e) {
                     e.printStackTrace();
                 }
 
@@ -148,18 +144,21 @@ public class Engine {
                 Object[] trends = oneDayStatistics.findAndGetTrends();
 
                 oneDayStatistics.clearStatistics();
-                updateOutputFile(oneDayResults, trends, time / (6 * 24), "Day");
+                updateOutputFile(oneDayResults, trends);
 
                 oneHourTimerLatch = new CountDownLatch(24);
             }
         }, oneDayTimerDelay, 1000 * 60 * 60 * 24);
     }
 
-    private void updateOutputFile(File file, Object[] trends, int time, String timeUnit) {
+    private void updateOutputFile(File file, Object[] trends) {
+        Date today = new Date();
+        SimpleDateFormat timeFormat =
+                new SimpleDateFormat("E yyyy.MM.dd 'at' hh:mm:ss a zzz");
         try {
             FileWriter fileWriter = new FileWriter(file, true);
             BufferedWriter bufferedWriter = new BufferedWriter(fileWriter);
-            bufferedWriter.write("\n\n" + time + " " + timeUnit + "\nuserName : " + trends[0].toString()
+            bufferedWriter.write("\n\n" + timeFormat.format(today) + "\nuserName : " + trends[0].toString()
                     + "\nrepoName : " + trends[1].toString() + "\nlanguage : " + trends[2].toString() + "\norganization : "
                     + trends[3].toString());
             bufferedWriter.close();

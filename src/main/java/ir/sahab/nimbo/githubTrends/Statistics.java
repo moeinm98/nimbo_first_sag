@@ -1,3 +1,5 @@
+package ir.sahab.nimbo.githubTrends;
+
 import org.json.JSONObject;
 
 import java.io.Serializable;
@@ -79,10 +81,8 @@ public class Statistics implements Serializable {
                 extractOrganization(jsonObject);
                 break;
             case "PushEvent":
-//                int commitNum = jsonObject.getJSONObject("payload").getJSONArray("commits").length(); //. notcommented _ commented
-                int commitNum=1;
+                int commitNum = jsonObject.getJSONObject("payload").getJSONArray("commits").length(); //. notcommented _ commented
                 info.setCommitNum(commitNum + info.getCommitNum());
-//                System.out.println(jsonObject.getJSONObject("payload").getJSONArray("commits"));
                 break;
             case "ReleaseEvent":
                 info.setReleaseNum(info.getReleaseNum() + 1);
@@ -100,7 +100,7 @@ public class Statistics implements Serializable {
         JSONObject orgObject = jsonObject.getJSONObject("org");
         String organizationName = orgObject.getString("login");
 
-        if (!organizationMap.containsKey(organizationName)) {//todo
+        if (!organizationMap.containsKey(organizationName)) {
             organizationMap.put(organizationName, 1);
         } else {
             organizationMap.put(organizationName, organizationMap.get(organizationName) + 1);

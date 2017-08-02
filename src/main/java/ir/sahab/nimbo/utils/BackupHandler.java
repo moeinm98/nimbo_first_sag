@@ -1,3 +1,7 @@
+package ir.sahab.nimbo.utils;
+
+import ir.sahab.nimbo.githubTrends.Statistics;
+
 import java.io.*;
 
 public class BackupHandler

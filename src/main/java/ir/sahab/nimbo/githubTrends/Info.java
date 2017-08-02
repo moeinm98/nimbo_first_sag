@@ -1,3 +1,5 @@
+package ir.sahab.nimbo.githubTrends;
+
 import java.io.Serializable;
 
 public abstract class Info implements Serializable, Comparable {
@@ -152,21 +154,7 @@ public abstract class Info implements Serializable, Comparable {
 
     @Override
     public String toString() {
-        return name+" " +
-                "commitComment:"+ commitCommentNum+" " +
-                "creation:"+creationNum+" " +
-                "fork:"+forkNum+" " +
-                "issueComment:"+issueCommentNum+" " +
-                "issue:"+issueNum+" " +
-                "label:"+labelNum+" " +
-                "milestone:"+milestoneNum+" " +
-                "pageBuild:"+pageBuildNum+" " +
-                "watch:"+ this.watchNum + " " +
-                "release:" + this.releaseNum + " " +
-                "pullRequest:" + this.pullRequestNum + " " +
-                "gollum:" + this.gollumNum + " " +
-                "commit:" + this.commitNum + " " +
-                "finalScore:" + this.computeValue();
+        return name;
     }
 
     @Override
