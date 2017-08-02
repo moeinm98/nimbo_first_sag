@@ -2,6 +2,8 @@ import com.satori.rtm.*;
 import com.satori.rtm.model.AnyJson;
 import com.satori.rtm.model.SubscriptionData;
 
+import java.io.IOException;
+
 public class Receiver {
     final private String endpoint = "wss://open-data.api.satori.com";
     final private String appkey = "86Cac8DF15eCaEF2B3A3846de9D5FF07";
@@ -29,6 +31,13 @@ public class Receiver {
                         for (AnyJson json : data.getMessages()) {
                             String message = json.toString();
                             statistics.updateStatistics(message);
+                        }
+                        try
+                        {
+                            BackupHandler.updateBackupFile("tenMinBackup.data", statistics);
+                        } catch (IOException e)
+                        {
+                            e.printStackTrace();
                         }
                     }
                 });
